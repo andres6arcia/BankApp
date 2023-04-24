@@ -32,8 +32,7 @@ export class UserAggregateRoot
     return AddRoleHelper(
       entity,
       role,
-      this.userService,
-      this.events.get(Topic.RoleAdded),
+      this.userService
     );
   }
 

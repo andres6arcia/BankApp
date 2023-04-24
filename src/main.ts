@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Transport } from '@nestjs/microservices';
 import { auth } from 'express-openid-connect';
+import { LoggerInterceptor } from './subdomains/security/contexts/authentication/utils/interceptors/logger.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -24,6 +25,7 @@ async function bootstrap() {
       },
     },
   });
+  app.useGlobalInterceptors(new LoggerInterceptor());
   await app.startAllMicroservices();
   await app.listen(3000);
 }

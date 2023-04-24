@@ -1,14 +1,17 @@
-import { Body, Controller, Param, Post } from '@nestjs/common';
+import { Body, Controller, Param, Post, UseGuards } from '@nestjs/common';
 import { CreateUserUseCase } from '../../application/use-cases/create-user/create-user.use-case';
 import { UserCreatedPublisher } from '../messaging/publishers/user-created.publisher';
 import { UserService } from '../persistence/services/user.service';
-import { CreateUserCommand } from '../utils/commands/create-user.command';
-import { AddRoleCommand } from '../utils/commands';
+import { CreateUserCommand } from './commands/create-user.command';
+import { AddRoleCommand } from './commands';
 import { AddRoleUseCase } from '../../application/use-cases/add-role/add-role.use-case';
 import { RoleService } from '../persistence/services/role.service';
 import { RoleAddedPublisher } from '../messaging/publishers/role-added.publisher';
+import { DtoValidator } from '../utils/pipes/dto-validator.pipe';
+import { AuthenticationGuard } from '../utils/guards/authentication.guard';
 
 @Controller('user')
+@UseGuards(new AuthenticationGuard())
 export class UsersController {
   constructor(
     private readonly userService: UserService,
@@ -18,7 +21,7 @@ export class UsersController {
   ) {}
 
   @Post('')
-  async user(@Body() command: CreateUserCommand) {
+  async user(@Body(new DtoValidator()) command: CreateUserCommand) {
     const useCase = new CreateUserUseCase(
       this.userService,
       this.userCreatedPublisher,
@@ -27,7 +30,7 @@ export class UsersController {
   }
 
   @Post(':userId/role/:roleId')
-  async role(@Param() command: AddRoleCommand) {
+  async addRole(@Param(new DtoValidator()) command: AddRoleCommand) {
     const useCase = new AddRoleUseCase(
       this.userService,
       this.roleService,
